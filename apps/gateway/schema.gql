@@ -1,0 +1,67 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+"""User schema"""
+type User {
+  id: ID!
+  username: String!
+  firstname: String!
+  lastname: String!
+  age: Int!
+  conversations: [Conversation]!
+}
+
+"""Message schema"""
+type Message {
+  createdAt: DateTime!
+  content: String!
+  author: User!
+}
+
+"""
+A date-time string at UTC, such as 2007-12-03T10:15:30Z, compliant with the `date-time` format outlined in section 5.6 of the RFC 3339 profile of the ISO 8601 standard for representation of dates and times using the Gregorian calendar.
+"""
+scalar DateTime
+
+"""Coversation schema"""
+type Conversation {
+  id: ID!
+  createdAt: DateTime!
+  creator: User!
+  members: [User!]!
+  messages: [Message]!
+}
+
+type Query {
+  user(id: ID!): User!
+  users: [User!]!
+  conversation(id: ID!): Conversation!
+  conversations(memberId: ID!): [Conversation!]!
+}
+
+type Mutation {
+  signup(createUserData: CreateUserInput!): User!
+  createConversation(createConversationData: CreateConversationInput!): Conversation!
+  sendMessage(sendMessageData: CreateMessageInput!): Message!
+}
+
+input CreateUserInput {
+  username: String!
+  password: String!
+  firstname: String!
+  lastname: String!
+  age: Int!
+}
+
+input CreateConversationInput {
+  creatorId: ID!
+  memberIds: [ID!]!
+  subject: String
+}
+
+input CreateMessageInput {
+  content: String!
+  authorId: ID!
+  conversationId: ID!
+}

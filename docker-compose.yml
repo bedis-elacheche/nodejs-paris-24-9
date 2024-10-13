@@ -1,0 +1,75 @@
+services:
+  db:
+    image: mongo:8
+    networks:
+      - proxy
+    ports:
+      - ${MONGO_PORT}:27017
+    volumes:
+      - db-data:/data/db
+
+  redis:
+    image: redis:7.2-alpine
+    networks:
+      - proxy
+    ports:
+      - ${REDIS_PORT}:6379
+    volumes:
+      - redis-data:/data
+
+  ms-users:
+    environment:
+      DB_URL: mongodb://db:27017/ms-users
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: ms-users
+    image: ms-users
+    networks:
+      - proxy
+    depends_on:
+      - db
+    ports:
+      - ${MS_USERS_PORT}:3000
+
+  ms-chat:
+    environment:
+      KV_STORE_URL: redis://redis:6379
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: ms-chat
+    image: ms-chat
+    networks:
+      - proxy
+    depends_on:
+      - redis
+    ports:
+      - ${MS_CHAT_PORT}:3000
+
+  gateway:
+    environment:
+      MS_USERS_API_URL: http://ms-users:3000
+      MS_CHAT_API_URL: http://ms-chat:3000
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: gateway
+    image: gateway
+    networks:
+      - proxy
+    depends_on:
+      - ms-users
+      - ms-chat
+    ports:
+      - ${GATEWAY_PORT}:3000
+
+volumes:
+  db-data:
+    driver: local
+  redis-data:
+    driver: local
+
+networks:
+  proxy:
+    driver: bridge
